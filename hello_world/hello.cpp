@@ -19,7 +19,43 @@ int main (int argc, char **argv) {
 		SDL_DestroyWindow(win);
 		std::cout << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
-		return 1;
+		return 0;
+	}
+
+	std::string imagePath = getResourcePath("Lesson1") + "hello.bmp";
+	SDL_Surface *bmp = SDL_LoadBMP(imagePath.c_str());
+	if (bmp == nullptr) {
+		SDL_DestroyRenderer(ren);
+		SDL_DestroyWindow(win);
+		std::cout << "SDL_LoadBMP Error: " << SDL_GetError() << std::endl;
+		SDL_Quit();
+		return 0;
+	}
+
+	SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, bmp);
+	SDL_FreeSurface(bmp);
+	if (tex == nullptr){
+		SDL_DestroyRenderer(ren);
+		SDL_DestroyWindow(win);
+		std::cout << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
+		SDL_Quit();
+		return 0;
+		
+	}
+
+	for (int i = 0; i < 3; i ++){
+		//First clear the renderer
+		SDL_RenderClear(ren);
+
+		//Draw the texture
+		SDL_RenderCopy(ren, tex, NULL, NULL);
+
+		//Update the screen	
+		SDL_RenderPresent(ren);
+
+		//Take a quick break after all that hard work
+		SDL_Delay(1000);
+		
 	}
 
 }
