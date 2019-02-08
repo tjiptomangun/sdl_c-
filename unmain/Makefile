@@ -8,14 +8,11 @@ EXE = unmain
 all: $(EXE)
 
 
-$(EXE): unmain.o
-
+$(EXE): unmain.o 
 	$(CXX) $< $(LDFLAGS) -o $@
 
-unmain.o: unmain.cpp
-
+cleanup.o : cleanup.cpp 
 	$(CXX) $(CXXFLAGS) $< -o $@
-
 clean:
 
 	rm *.o && rm $(EXE)

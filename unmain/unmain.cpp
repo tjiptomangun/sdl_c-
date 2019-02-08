@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include "res_path.h"
+#include "cleanup.h"
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -10,7 +11,7 @@ const int SCREEN_HEIGHT = 480;
  * @param msg The error message to write, format will be msg error: SDL_GetError()
  */
 
-void logSDLEror(std::ostream &os, const std::string &msg) {
+void logSDLError(std::ostream &os, const std::string &msg) {
 	os << msg << "error: " << SDL_GetError() << std::endl;
 }
 
@@ -60,22 +61,23 @@ void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y) {
 	dst.y = y;
 
 	//Query the texture to get its width and height to use
-	SDL_QueryTexture(tex, NUULL, NULL, &dst.w, &dst.h);
-	SDL_RenderCopy(ren, tex, NULL< &dst);
+	SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
+	SDL_RenderCopy(ren, tex, NULL, &dst);
 	
 }
 
 int main (int argc, char **argv) {
-	
+	//Start up SDL and make sure it went ok	
 	if(SDL_Init(SDL_INIT_EVERYTHING) != 0){
 		logSDLError(std::cout, "SDL_Init");
 		return 1;
 	}
 
+	//Set up our window and renderer
 	SDL_Window *window = SDL_CreateWindow("Lesson 2", 100, 100, SCREEN_WIDTH, 
-		SCREEN_HEIGHT, SDL_WINDO_SHOWN);A
+		SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
-	if (window == nulptr){
+	if (window == nullptr){
 		logSDLError(std::cout, "CreateWindow");
 		SDL_Quit();
 		return 1;
@@ -87,6 +89,53 @@ int main (int argc, char **argv) {
 		logSDLError(std::cout, "CreateRenderer");
 		cleanup(window);
 		SDL_Quit();
-	}	
+		return 1;
+	}
+
+	//The textures we'll be using
+	const std::string respath = getResourcePath("Lesson2");
+	SDL_Texture *background = loadTexture(respath + "background.bmp", renderer);
+	SDL_Texture *image = loadTexture(respath + "image.bmp", renderer);
+	if (background == nullptr || image == nullptr){
+		cleanup(background, image, renderer, window);
+		SDL_Quit();
+		return 1;
+	}
+
+	// A sleepy rendering loop, wait for 3 seconds and render and 
+	// present the screen each time
+	for (int i = 0; i < 3; i ++){
+		//Clear the window
+		SDL_RenderClear(renderer);
+
+		//Get the width and height from the texture so we know how much
+		//to move x, y by to tile it correctly	
+		int bW, bH;
+	
+		SDL_QueryTexture(background, NULL, NULL, &bW, &bH);
+		renderTexture(background, renderer, 0, 0);
+		renderTexture(background, renderer, bW, 0);
+		renderTexture(background, renderer, 0, bH);
+		renderTexture(background, renderer, bW, bH);
+
+		//Draw our image at the center of the window
+		//We need the foreground image's width to properly compute
+		//the position of it's top left corner so the
+		//image will be centered	
+		int iW, iH;
+		SDL_QueryTexture(image, NULL, NULL, &iW, &iH);
+		int x = SCREEN_WIDTH/2 -iW/2;
+		int y = SCREEN_HEIGHT/2 - iH/2;
+		renderTexture(image, renderer, x, y);
+
+		//Update the screen
+		SDL_RenderPresent(renderer);
+
+		//Take a quick break after all that hard work
+		SDL_Delay(1000);
+	}
+
+	cleanup(background, image, renderer, window);
+	SDL_Quit(); 
 }
 
