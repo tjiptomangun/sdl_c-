@@ -11,8 +11,6 @@ all: $(EXE)
 $(EXE): image.o 
 	$(CXX) $< $(LDFLAGS) -o $@
 
-cleanup.o : cleanup.cpp 
-	$(CXX) $(CXXFLAGS) $< -o $@
 clean:
 
 	rm *.o && rm $(EXE)
