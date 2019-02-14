@@ -1,6 +1,7 @@
 #include <string.h>
-#include <iostream.h>
+#include <iostream>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_image.h>
 #include "res_path.h"
 #include "cleanup.h"
@@ -74,21 +75,7 @@ void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, SDL_Rect *
 		SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
 	} 
 	renderTexture(tex, ren, dst, clip); 
-}
-
-/**
- * Draw an SDL_Texture to an SDL_Renderer at position x, y preserving
- * the texture's width and height
- * @param tex The source texture we want to draw
- * @param ren The renderer we want to draw to
- * @param x the x coordinate to draw to
- * @param y the y coordinate to draw to
- */
-void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y){
-	int w, h;
-	SDL_QueryTexture(tex, NULL, NULL, &w, &h);
-	renderTexture(tex, ren, x, y, w, h);
-}
+} 
 
 int main (int argc, char **argv) {
 
@@ -105,7 +92,7 @@ int main (int argc, char **argv) {
 	}
 
 	//Set up our window and renderer
-	SDL_Window *window = SDL_CreateWindow("Lesson 3", 0, 0, SCREEN_WIDTH, 
+	SDL_Window *window = SDL_CreateWindow("Lesson 5", 0, 0, SCREEN_WIDTH, 
 		SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
 	if (window == nullptr){
@@ -126,68 +113,98 @@ int main (int argc, char **argv) {
 	}
 
 	//The textures we'll be using
-	const std::string respath = getResourcePath("Lesson4");
-	SDL_Texture *background = loadTexture(respath + "background.png", renderer);
+	const std::string respath = getResourcePath("Lesson5");
 	SDL_Texture *image = loadTexture(respath + "image.png", renderer);
 	/**
 	 * Make sure they both loaded ok
 	 */
-	if (background == nullptr || image == nullptr){
-		cleanup(background, image, renderer, window);
+	if (image == nullptr){
+		cleanup(image, renderer, window);
 		IMG_Quit();
 		SDL_Quit();
 		return 1;
 	}
 
-	//Our event structure
-	SDL_Event e;
 
-	//For tracking if we want to quit
-	bool quit = false;
-
-	int xTiles = SCREEN_WIDTH / TILE_SIZE;
-	int yTiles = SCREEN_HEIGHT / TILE_SIZE;
-
-	int iW, iH;
-	SDL_QueryTexture(image, NULL, NULL, &iW, &iH);
+	int iW = 100, iH = 100;
 	int x = SCREEN_WIDTH / 2 - iW /2 ;
 	int y = SCREEN_HEIGHT / 2 - iH / 2;
+
+	//Setup the clips for our image
+	SDL_Rect clips[4];
+
+	//Since our clips are uniform in size, we can generate a list of their
+	//positions using some math (the specificss of this are covered in the lesson)
+
+	for (int i = 0 ; i < 4; i++){
+		clips[i].x = i / 2 * iW;
+		clips[i].y = i % 2 * iH;
+
+		clips[i].w = iW;
+		clips[i].h = iH;
+	}
+
+	//Specify a default clip to start with
+	int useClip = 0;
+
+	SDL_Event e;
+	bool quit = false;
 
 	while (!quit){	
 		
 		//Read any events that occured, for now we'll just quit if any
 		//event occured
 		while(SDL_PollEvent(&e)){
-			//If the user close the window
-			if (e.type == SDL_QUIT)
-				quit = true; 
-			//If user presses any key
-			else if (e.type == SDL_KEYDOWN)
-				quit = true; 
-			//If user clicks the mouse
-			else if (e.type == SDL_MOUSEBUTTONDOWN)
-				quit = true; 
+			//here we are
+			if (e.type == SDL_QUIT){
+				quit = true;
+			}
+
+			if (e.type == SDL_KEYDOWN){
+				switch (e.key.keysym.sym){
+	
+					case SDLK_1:
+					case SDLK_KP_1:
+	
+						useClip = 0;
+						break;
+	
+					case SDLK_2:
+					case SDLK_KP_2:
+	
+						useClip = 1;
+						break;
+	
+					case SDLK_3:
+					case SDLK_KP_3:
+	
+						useClip = 2;
+						break;
+	
+					case SDLK_4:
+					case SDLK_KP_4:
+	
+						useClip = 3;
+						break;
+	
+					case SDLK_ESCAPE:
+						quit = true;
+						break;	
+	
+					default:
+						break;
+				}
+			}
 		}
 
 		//Clear the window
 		SDL_RenderClear(renderer); 
 
-		//Determine how many tiles we need to fill the screen
-
-		//Draw the tiles by calculating positions
-		for (int i = 0; i < xTiles * yTiles; ++i){
-			int x = i % xTiles;
-			int y = i / xTiles;
-			renderTexture(background, renderer, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-		}
 
 		/**
 		 * Draw our image in the center of the window
-		 * We need the foreground image's width to properly
-		 * compute the position of it's top left corner so
-		 * that the image will be centered 
 		 */
-		renderTexture(image, renderer, x, y);
+		renderTexture(image, renderer, x, y, &clips[useClip]);
 
 		//Update the screen
 		SDL_RenderPresent(renderer);
@@ -195,7 +212,7 @@ int main (int argc, char **argv) {
 	}
 
 	//Destroy various items
-	cleanup(background, image, renderer, window);
+	cleanup(image, renderer, window);
 
 	IMG_Quit();
 	SDL_Quit(); 
