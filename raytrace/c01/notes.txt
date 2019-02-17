@@ -1,0 +1,68 @@
+1. Cross Product
+
+i x j = k
+j x k = i
+k x i = j
+
+anti commutative
+j x i = -k
+k x j = -i
+i x k = -j
+
+i x i = j x j = k x k = 0
+
+
+a = (a1i + a2j + a3k)
+b = (b1i + b2j + b3k)
+
+a x b = (a1i x b1i) + (a1i x b2j) + (a1i x b3k) + 
+        (a2j x b1i) + (a2j x b2j) + (a2j x b3k) +
+        (a3k x b1i) + (a3k x b2j) + (a3k x b3k)
+
+      = (a1b2)k - (a1b3)j
+        - (a2b1)k + (a2b3)i
+        + (a3b1)j - (a3b2)i
+
+      = (a2b3 - a3b2)i + (a3b1 - a1b3)j + (a1b2 - a2b1)k
+
+
+ Scalar components (using column vector)     
+     
+     s1    a2b3 - a3b2 
+     s2  = a3b1 - a1b3
+     s3    a1b2 - a2b1
+     
+Matrix notation
+
+         | i     j     k     |     
+a x b =  | a1   a2     a3    |
+         | b1   b2     b3    |
+
+cross product
+
+         | i     j     k     | i    j
+a x b =  | a1   a2     a3    | a1  a2
+         | b1   b2     b3    | b1  b2
+         
+         
+         a2b3i + a3b1j + a1b2k - a3b2i - a1b3j - a2b1k
+         
+         
+using cofactor expansion
+
+
+         |a2  a3|     |a1  a3|    |a1  a2|
+a x b =  |b2  b3| i - |b1  b3|j + |b1  b2|
+
+magniture of || a x b || = ||a||  ||b|| sin (theta)
+          
+
+          
+Dot Product
+
+it is a scalar product
+
+a . b = abT
+
+
+ 
